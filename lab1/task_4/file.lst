@@ -1,0 +1,38 @@
+     1                                  section .data
+     2 00000000 1900                        a dw 25
+     3 00000002 DDFF                        b dw -35
+     4 00000004 D090D0BBD0B5D0BAD1-         D db "Алексей", 10
+     4 0000000D 81D0B5D0B90A       
+     5 00000013 416C657865790A              C db "Alexey", 10
+     6 0000001A 507265737320456E74-     ExitMsg db "Press Enter to exit", 10
+     6 00000023 657220746F20657869-
+     6 0000002C 740A               
+     7                                  lenExit equ $-ExitMsg
+     8                                  
+     9                                  section .bss
+    10 00000000 ????????                    x resd 1
+    11 00000004 <res Ah>                    InBuf resb 10
+    12                                      lenIn equ $-InBuf
+    13                                  
+    14                                  section .text
+    15                                  
+    16                                  global _start
+    17                                  _start:
+    18                                      ;write
+    19 00000000 B801000000                  mov rax, 1
+    20 00000005 BF01000000                  mov rdi, 1
+    21 0000000A 48BE-                       mov rsi, ExitMsg
+    21 0000000C [1A00000000000000] 
+    22 00000014 BA14000000                  mov rdx, lenExit
+    23 00000019 0F05                        syscall
+    24                                      ;read
+    25 0000001B B800000000                  mov rax, 0
+    26 00000020 BF00000000                  mov rdi, 0
+    27 00000025 48BE-                       mov rsi, InBuf
+    27 00000027 [0400000000000000] 
+    28 0000002F BA0A000000                  mov rdx, lenIn
+    29 00000034 0F05                        syscall
+    30                                      ;exit
+    31 00000036 B83C000000                  mov rax, 60
+    32 0000003B 4831FF                      xor rdi, rdi
+    33 0000003E 0F05                        syscall

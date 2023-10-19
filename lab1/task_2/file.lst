@@ -1,0 +1,18 @@
+     1                                  section .data
+     2 00000000 E2FFFFFF                    A dd -30
+     3 00000004 15000000                    B dd 21
+     4                                  
+     5                                  section .bss
+     6 00000000 ????????                    X resd 1
+     7                                  
+     8                                  section .text
+     9                                      global _start 
+    10                                  _start:
+    11 00000000 8B0425[00000000]            mov eax, [A]
+    12 00000007 83C005                      add eax, 5
+    13 0000000A 2B0425[04000000]            sub eax, [B]
+    14 00000011 890425[00000000]            mov [X], eax
+    15 00000018 0F05                        syscall
+    16                                  
+    17 0000001A B83C000000                  mov rax, 60
+    18 0000001F 0F05                        syscall

@@ -1,0 +1,211 @@
+     1                                  %include "lib64.asm"
+     2                              <1>          section .text     ; ������� ����
+     3                              <1> IntToStr64: 
+     4 00000000 57                  <1>          push   rdi
+     5 00000001 53                  <1>          push   rbx
+     6 00000002 52                  <1>          push   rdx
+     7 00000003 51                  <1>          push   rcx
+     8 00000004 56                  <1> 		 push   rsi
+     9 00000005 C60600              <1> 		 mov    byte[rsi],0 ; �� ����� �����
+    10 00000008 83F800              <1>          cmp    eax,0
+    11 0000000B 7D05                <1>          jge    .l1
+    12 0000000D F7D8                <1>          neg    eax
+    13 0000000F C6062D              <1>          mov    byte[rsi],'-'
+    14 00000012 C646060A            <1> .l1      mov    byte[rsi+6],10
+    15 00000016 BF05000000          <1>          mov    rdi,5
+    16 0000001B 66BB0A00            <1>          mov    bx,10
+    17 0000001F 6699                <1> .again:  cwd           ; ��������� ����� �� ��������
+    18 00000021 66F7F3              <1>          div    bx     ; ����� ��������� �� 10
+    19 00000024 80C230              <1>          add    dl,30h ; �������� �� ������� ��� �����
+    20 00000027 88143E              <1>          mov    [rsi+rdi],dl ; ����� ������ � ������
+    21 0000002A 48FFCF              <1>          dec    rdi    ; ��������� ��������� ��  
+    22                              <1>                        ; ���������� �������
+    23 0000002D 6683F800            <1>          cmp    ax, 0  ; ������������� ��� �����?
+    24 00000031 75EC                <1>          jne    .again
+    25 00000033 B906000000          <1>          mov    rcx, 6
+    26 00000038 4829F9              <1>          sub    rcx, rdi ; ����� ����������+����
+    27 0000003B 4889C8              <1> 		 mov    rax,rcx
+    28 0000003E 48FFC0              <1> 		 inc    rax    ; ����� ����������+OA
+    29 00000041 48FFC6              <1>          inc    rsi    ; ���������� ����
+    30 00000044 56                  <1> 		 push   rsi
+    31 00000045 488D343E            <1>          lea    rsi,[rsi+rdi] ; ������ ����������
+    32 00000049 5F                  <1> 		 pop    rdi
+    33 0000004A F3A4                <1>          rep movsb
+    34 0000004C 5E                  <1>          pop    rsi  
+    35 0000004D 59                  <1>          pop    rcx
+    36 0000004E 5A                  <1>          pop    rdx
+    37 0000004F 5B                  <1>          pop    rbx
+    38 00000050 5F                  <1>          pop    rdi
+    39 00000051 C3                  <1>          ret
+    40                              <1> StrToInt64:
+    41 00000052 57                  <1>          push   rdi
+    42 00000053 B739                <1>          mov    bh, '9'
+    43 00000055 B330                <1>          mov    bl, '0'
+    44 00000057 56                  <1>          push   rsi     ; ��������� ����� �������� ������
+    45 00000058 803E2D              <1>          cmp    byte[rsi], '-'
+    46 0000005B 7503                <1>          jne    .prod
+    47 0000005D 48FFC6              <1>          inc    rsi     ; ���������� ����
+    48 00000060 FC                  <1> .prod    cld
+    49 00000061 6631FF              <1>          xor    di, di  ; �������� ������� �����
+    50 00000064 AC                  <1> .cycle:  lodsb          ; ��������� ������ (�����)
+    51 00000065 3C0A                <1>          cmp    al, 10  ; ���� 10, �� �� �����
+    52 00000067 741F                <1>          je     .Return
+    53 00000069 38D8                <1>          cmp    al, bl  ; ���������� � ����� ����
+    54 0000006B 722F                <1>          jb     .Error  ; "����" � ������
+    55 0000006D 38F8                <1>          cmp    al, bh  ; ���������� � ����� ������ 
+    56 0000006F 772B                <1>          ja     .Error  ; "����" � ������
+    57 00000071 2C30                <1>          sub    al, 30h ; �������� ����� �� �������
+    58 00000073 6698                <1>          cbw            ; ��������� �� �����
+    59 00000075 6650                <1>          push   ax      ; ��������� � �����
+    60 00000077 66B80A00            <1>          mov    ax, 10  ; ������� 10 � AX
+    61 0000007B 66F7E7              <1>          mul    di      ; ��������, ��������� � DX:AX
+    62 0000007E 665F                <1>          pop    di      ; � DI � ��������� �����
+    63 00000080 6601F8              <1>          add    ax, di
+    64 00000083 6689C7              <1>          mov    di, ax  ; � DI � ����������� �����        
+    65 00000086 EBDC                <1>          jmp    .cycle
+    66 00000088 5E                  <1> .Return: pop    rsi
+    67 00000089 BB00000000          <1>          mov    rbx, 0
+    68 0000008E 803E2D              <1>          cmp    byte[rsi], '-'
+    69 00000091 7503                <1>          jne    .J
+    70 00000093 66F7DF              <1>          neg    di
+    71 00000096 6689F8              <1> .J       mov    ax, di
+    72 00000099 98                  <1>          cwde
+    73 0000009A EB0B                <1>          jmp    .R
+    74 0000009C 5E                  <1> .Error:  pop    rsi
+    75 0000009D B800000000          <1>          mov    rax, 0
+    76 000000A2 BB01000000          <1>          mov    rbx, 1
+    77 000000A7 5F                  <1> .R       pop    rdi
+    78 000000A8 C3                  <1>          ret
+     2                                  section .data
+     3 00000000 0A456E74657220796F-         StartMsg db 10, "Enter your numbers...", 10
+     3 00000009 7572206E756D626572-
+     3 00000012 732E2E2E0A         
+     4                                      StartLen equ $-StartMsg
+     5                                  
+     6 00000017 0A596F757220726573-         ExitMsg db 10, "Your result", 10
+     6 00000020 756C740A           
+     7                                      ExitLen equ $-ExitMsg
+     8                                  
+     9 00000024 5A65726F2064697669-         error db "Zero divizion", 10
+     9 0000002D 7A696F6E0A         
+    10                                  
+    11                                  section .bss
+    12 00000000 ????????                    a resd 1
+    13 00000004 ????????                    b resd 1
+    14 00000008 ????????                    x resd 1
+    15 0000000C ????????                    d resd 1
+    16                                  
+    17 00000010 <res Ah>                    InBuf resb 10
+    18 0000001A ????????                    OutBuf resb 4
+    19                                      LenIn equ $-InBuf
+    20                                      LenOut equ $-OutBuf
+    21                                  
+    22                                  section .text
+    23                                      global _start
+    24                                  _start:
+    25                                      ;вывод начального сообщения
+    26 000000A9 B801000000                  mov rax, 1
+    27 000000AE BF01000000                  mov rdi, 1
+    28 000000B3 48BE-                       mov rsi, StartMsg
+    28 000000B5 [0000000000000000] 
+    29 000000BD BA17000000                  mov rdx, StartLen
+    30 000000C2 0F05                        syscall
+    31                                  
+    32                                      ;ввод переменных
+    33                                      ;a
+    34 000000C4 B800000000                  mov rax, 0
+    35 000000C9 BF00000000                  mov rdi, 0
+    36 000000CE 48BE-                       mov rsi, InBuf
+    36 000000D0 [1000000000000000] 
+    37 000000D8 BA0E000000                  mov rdx, LenIn
+    38 000000DD 0F05                        syscall
+    39                                  
+    40 000000DF 48BF-                       mov rdi, InBuf
+    40 000000E1 [1000000000000000] 
+    41 000000E9 E864FFFFFF                  call StrToInt64
+    42 000000EE 4883FB00                    cmp rbx, 0
+    43 000000F2 0F85(00000000)              jne 0
+    44 000000F8 890425[00000000]            mov [a], eax
+    45                                  
+    46                                      ;b
+    47 000000FF B800000000                  mov rax, 0
+    48 00000104 BF00000000                  mov rdi, 0
+    49 00000109 48BE-                       mov rsi, InBuf
+    49 0000010B [1000000000000000] 
+    50 00000113 BA0E000000                  mov rdx, LenIn
+    51 00000118 0F05                        syscall
+    52                                  
+    53 0000011A 48BF-                       mov rdi, InBuf
+    53 0000011C [1000000000000000] 
+    54 00000124 E829FFFFFF                  call StrToInt64
+    55 00000129 4883FB00                    cmp rbx, 0
+    56 0000012D 0F85(00000000)              jne 0
+    57 00000133 48890425[04000000]          mov [b], rax
+    58                                  
+    59 0000013B 488B0425[04000000]          mov rax, [b]
+    60 00000143 4883F805                    cmp rax, 5
+    61 00000147 0F84BC000000                je input_error
+    62                                  
+    63                                      ;x
+    64 0000014D B800000000                  mov rax, 0
+    65 00000152 BF00000000                  mov rdi, 0
+    66 00000157 48BE-                       mov rsi, InBuf
+    66 00000159 [1000000000000000] 
+    67 00000161 BA0E000000                  mov rdx, LenIn
+    68 00000166 0F05                        syscall
+    69                                  
+    70 00000168 48BF-                       mov rdi, InBuf
+    70 0000016A [1000000000000000] 
+    71 00000172 E8DBFEFFFF                  call StrToInt64
+    72 00000177 4883FB00                    cmp rbx, 0
+    73 0000017B 0F85(00000000)              jne 0
+    74 00000181 48890425[08000000]          mov [x], rax
+    75                                  
+    76                                      ;вычисления
+    77                                  
+    78                                      ;числитель
+    79 00000189 B803000000                  mov eax, 3  
+    80 0000018E F72C25[00000000]            imul dword[a]
+    81 00000195 F72C25[08000000]            imul dword[x]
+    82                                  
+    83 0000019C 8B1C25[04000000]            mov ebx, [b]
+    84 000001A3 83EB05                      sub ebx, 5
+    85 000001A6 6BDB05                      imul ebx, 5
+    86                                      cqd
+    86          ******************       warning: label alone on a line without a colon might be in error [-w+label-orphan]
+    87 000001A9 F7FB                        idiv ebx ;ответ
+    88                                  
+    89 000001AB 890425[0C000000]            mov [d], eax ;кладем результат в нужную переменную
+    90                                  
+    91                                      ;вывод
+    92 000001B2 B801000000                  mov rax, 1
+    93 000001B7 BF01000000                  mov rdi, 1
+    94 000001BC 48BE-                       mov rsi, ExitMsg
+    94 000001BE [1700000000000000] 
+    95 000001C6 BA0D000000                  mov rdx, ExitLen
+    96 000001CB 0F05                        syscall
+    97                                  
+    98 000001CD 48BE-                       mov rsi, OutBuf
+    98 000001CF [1A00000000000000] 
+    99 000001D7 488B0425[0C000000]          mov rax, [d]
+   100 000001DF E81CFEFFFF                  call IntToStr64
+   101                                  
+   102 000001E4 B801000000                  mov rax, 1
+   103 000001E9 BF01000000                  mov rdi, 1
+   104 000001EE 48BE-                       mov rsi, OutBuf
+   104 000001F0 [1A00000000000000] 
+   105 000001F8 BA04000000                  mov rdx, LenOut
+   106 000001FD 0F05                        syscall
+   107                                  
+   108                                      ;выход
+   109 000001FF B83C000000                  mov rax, 60
+   110 00000204 4831FF                      xor rdi, rdi
+   111 00000207 0F05                        syscall    
+   112                                  
+   113                                  input_error:
+   114 00000209 B804000000                  mov eax, 4
+   115 0000020E BB01000000                  mov ebx, 1
+   116 00000213 B9[24000000]                mov ecx, error
+   117 00000218 BA2B000000                  mov edx, 43
+   118 0000021D CD80                        int 0x80
+   119 0000021F E985FEFFFF                  jmp _start

@@ -1,0 +1,241 @@
+     1                                  %include "./lib64.asm"
+     2                              <1>          section .text     ; ������� ����
+     3                              <1> IntToStr64: 
+     4 00000000 57                  <1>          push   rdi
+     5 00000001 53                  <1>          push   rbx
+     6 00000002 52                  <1>          push   rdx
+     7 00000003 51                  <1>          push   rcx
+     8 00000004 56                  <1> 		 push   rsi
+     9 00000005 C60600              <1> 		 mov    byte[rsi],0 ; �� ����� �����
+    10 00000008 83F800              <1>          cmp    eax,0
+    11 0000000B 7D05                <1>          jge    .l1
+    12 0000000D F7D8                <1>          neg    eax
+    13 0000000F C6062D              <1>          mov    byte[rsi],'-'
+    14 00000012 C646060A            <1> .l1      mov    byte[rsi+6],10
+    15 00000016 BF05000000          <1>          mov    rdi,5
+    16 0000001B 66BB0A00            <1>          mov    bx,10
+    17 0000001F 6699                <1> .again:  cwd           ; ��������� ����� �� ��������
+    18 00000021 66F7F3              <1>          div    bx     ; ����� ��������� �� 10
+    19 00000024 80C230              <1>          add    dl,30h ; �������� �� ������� ��� �����
+    20 00000027 88143E              <1>          mov    [rsi+rdi],dl ; ����� ������ � ������
+    21 0000002A 48FFCF              <1>          dec    rdi    ; ��������� ��������� ��  
+    22                              <1>                        ; ���������� �������
+    23 0000002D 6683F800            <1>          cmp    ax, 0  ; ������������� ��� �����?
+    24 00000031 75EC                <1>          jne    .again
+    25 00000033 B906000000          <1>          mov    rcx, 6
+    26 00000038 4829F9              <1>          sub    rcx, rdi ; ����� ����������+����
+    27 0000003B 4889C8              <1> 		 mov    rax,rcx
+    28 0000003E 48FFC0              <1> 		 inc    rax    ; ����� ����������+OA
+    29 00000041 48FFC6              <1>          inc    rsi    ; ���������� ����
+    30 00000044 56                  <1> 		 push   rsi
+    31 00000045 488D343E            <1>          lea    rsi,[rsi+rdi] ; ������ ����������
+    32 00000049 5F                  <1> 		 pop    rdi
+    33 0000004A F3A4                <1>          rep movsb
+    34 0000004C 5E                  <1>          pop    rsi  
+    35 0000004D 59                  <1>          pop    rcx
+    36 0000004E 5A                  <1>          pop    rdx
+    37 0000004F 5B                  <1>          pop    rbx
+    38 00000050 5F                  <1>          pop    rdi
+    39 00000051 C3                  <1>          ret
+    40                              <1> StrToInt64:
+    41 00000052 57                  <1>          push   rdi
+    42 00000053 B739                <1>          mov    bh, '9'
+    43 00000055 B330                <1>          mov    bl, '0'
+    44 00000057 56                  <1>          push   rsi     ; ��������� ����� �������� ������
+    45 00000058 803E2D              <1>          cmp    byte[rsi], '-'
+    46 0000005B 7503                <1>          jne    .prod
+    47 0000005D 48FFC6              <1>          inc    rsi     ; ���������� ����
+    48 00000060 FC                  <1> .prod    cld
+    49 00000061 6631FF              <1>          xor    di, di  ; �������� ������� �����
+    50 00000064 AC                  <1> .cycle:  lodsb          ; ��������� ������ (�����)
+    51 00000065 3C0A                <1>          cmp    al, 10  ; ���� 10, �� �� �����
+    52 00000067 741F                <1>          je     .Return
+    53 00000069 38D8                <1>          cmp    al, bl  ; ���������� � ����� ����
+    54 0000006B 722F                <1>          jb     .Error  ; "����" � ������
+    55 0000006D 38F8                <1>          cmp    al, bh  ; ���������� � ����� ������ 
+    56 0000006F 772B                <1>          ja     .Error  ; "����" � ������
+    57 00000071 2C30                <1>          sub    al, 30h ; �������� ����� �� �������
+    58 00000073 6698                <1>          cbw            ; ��������� �� �����
+    59 00000075 6650                <1>          push   ax      ; ��������� � �����
+    60 00000077 66B80A00            <1>          mov    ax, 10  ; ������� 10 � AX
+    61 0000007B 66F7E7              <1>          mul    di      ; ��������, ��������� � DX:AX
+    62 0000007E 665F                <1>          pop    di      ; � DI � ��������� �����
+    63 00000080 6601F8              <1>          add    ax, di
+    64 00000083 6689C7              <1>          mov    di, ax  ; � DI � ����������� �����        
+    65 00000086 EBDC                <1>          jmp    .cycle
+    66 00000088 5E                  <1> .Return: pop    rsi
+    67 00000089 BB00000000          <1>          mov    rbx, 0
+    68 0000008E 803E2D              <1>          cmp    byte[rsi], '-'
+    69 00000091 7503                <1>          jne    .J
+    70 00000093 66F7DF              <1>          neg    di
+    71 00000096 6689F8              <1> .J       mov    ax, di
+    72 00000099 98                  <1>          cwde
+    73 0000009A EB0B                <1>          jmp    .R
+    74 0000009C 5E                  <1> .Error:  pop    rsi
+    75 0000009D B800000000          <1>          mov    rax, 0
+    76 000000A2 BB01000000          <1>          mov    rbx, 1
+    77 000000A7 5F                  <1> .R       pop    rdi
+    78 000000A8 C3                  <1>          ret
+     2                                  
+     3                                  section .data
+     4 00000000 416E73776572206973-         ResMsg db "Answer is: f = "
+     4 00000009 3A2066203D20       
+     5                                      lenRes equ $-ResMsg
+     6                                  
+     7 0000000F 456E7465722061203D-         AMsg db "Enter a = "
+     7 00000018 20                 
+     8                                      lenAMsg equ $-AMsg
+     9                                  
+    10 00000019 456E7465722062203D-         BMsg db "Enter b = "
+    10 00000022 20                 
+    11                                      lenBMsg equ $-BMsg
+    12                                  
+    13 00000023 436F6D707574656420-         StartMsg db "Computed expression",0x0A," if a*b>0 then f=(a+b)/(a-b) else f = -120/(a*b)",0x0A
+    13 0000002C 65787072657373696F-
+    13 00000035 6E0A20696620612A62-
+    13 0000003E 3E30207468656E2066-
+    13 00000047 3D28612B62292F2861-
+    13 00000050 2D622920656C736520-
+    13 00000059 66203D202D3132302F-
+    13 00000062 28612A62290A       
+    14                                      lenStart equ $-StartMsg
+    15                                  
+    16 00000068 5A65726F2064697669-         ZeroDiv db "Zero division is forbidden", 0xa
+    16 00000071 73696F6E2069732066-
+    16 0000007A 6F7262696464656E0A 
+    17                                      lenZeroDiv equ $-ZeroDiv
+    18                                  
+    19 00000083 45786974696E672E2E-         ExitMsg db "Exiting...",   0xa
+    19 0000008C 2E0A               
+    20                                      lenExit equ $-ExitMsg
+    21                                  
+    22                                  section .bss
+    23 00000000 ????????                    InBuf resd 1
+    24 00000004 ????????????????            OutBuf resq 1
+    25                                      lenIn equ $-InBuf
+    26                                      lenOut equ $-OutBuf
+    27 0000000C ????????                    A resd 1
+    28 00000010 ????????                    B resd 1
+    29 00000014 ????????                    F resd 1
+    30                                  
+    31                                  section .text
+    32                                  global _start
+    33                                  _start:
+    34 000000A9 B801000000                  mov rax, 1; системная функция 1 (write)
+    35 000000AE BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+    36 000000B3 48BE-                       mov rsi, StartMsg ; адрес выводимой строки
+    36 000000B5 [2300000000000000] 
+    37 000000BD BA45000000                  mov rdx, lenStart ; длина строки
+    38 000000C2 0F05                        syscall; вызов системной функции
+    39                                      ; write
+    40 000000C4 B801000000                  mov rax, 1; системная функция 1 (write)
+    41 000000C9 BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+    42 000000CE 48BE-                       mov rsi, AMsg ; адрес выводимой строки
+    42 000000D0 [0F00000000000000] 
+    43 000000D8 BA0A000000                  mov rdx, lenAMsg ; длина строки
+    44 000000DD 0F05                        syscall; вызов системной функции
+    45                                      ; read
+    46 000000DF B800000000                  mov rax, 0 ; System call 0 for read
+    47 000000E4 BF00000000                  mov rdi, 0 ; File descriptor for stdin
+    48 000000E9 48BE-                       mov rsi, InBuf ; Address of input buffer
+    48 000000EB [0000000000000000] 
+    49 000000F3 BA0C000000                  mov rdx, lenIn ; Maximum length to read
+    50 000000F8 0F05                        syscall
+    51                                  
+    52 000000FA 48BF-                       mov rdi, InBuf; Pass address of input buffer to StrToInt64
+    52 000000FC [0000000000000000] 
+    53 00000104 E849FFFFFF                  call StrToInt64
+    54 00000109 4883FB00                    cmp rbx, 0
+    55 0000010D 0F85(00000000)              jne 0
+    56                                      ;content of InBuf goes to rax
+    57 00000113 48890425[0C000000]          mov [A], rax
+    58                                      ;write
+    59 0000011B B801000000                  mov rax, 1; системная функция 1 (write)
+    60 00000120 BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+    61 00000125 48BE-                       mov rsi, BMsg ; адрес выводимой строки
+    61 00000127 [1900000000000000] 
+    62 0000012F BA0A000000                  mov rdx, lenBMsg ; длина строки
+    63 00000134 0F05                        syscall; вызов системной функции
+    64                                      ; read
+    65 00000136 B800000000                  mov rax, 0 ; System call 0 for read
+    66 0000013B BF00000000                  mov rdi, 0 ; File descriptor for stdin
+    67 00000140 48BE-                       mov rsi, InBuf ; Address of input buffer
+    67 00000142 [0000000000000000] 
+    68 0000014A BA0C000000                  mov rdx, lenIn ; Maximum length to read
+    69 0000014F 0F05                        syscall
+    70 00000151 48BF-                       mov rdi, InBuf; Pass address of input buffer to StrToInt64
+    70 00000153 [0000000000000000] 
+    71 0000015B E8F2FEFFFF                  call StrToInt64
+    72 00000160 4883FB00                    cmp rbx, 0
+    73 00000164 0F85(00000000)              jne 0
+    74                                      ;content of InBuf goes to rax
+    75 0000016A 48890425[10000000]          mov [B], rax
+    76                                  
+    77                                      ;CALCULATIONS 
+    78 00000172 8B0425[0C000000]            mov eax, [A]
+    79 00000179 8B1C25[10000000]            mov ebx, [B]
+    80 00000180 0FAFC3                      imul eax, ebx
+    81 00000183 83F800                      cmp eax, 0
+    82 00000186 7415                        je zero_division
+    83 00000188 7F32                        jg else
+    84                                      
+    85 0000018A 89C3                        mov ebx, eax
+    86 0000018C B888FFFFFF                  mov eax, -120
+    87 00000191 99                          cdq
+    88 00000192 F7FB                        idiv ebx
+    89 00000194 890425[14000000]            mov [F], eax
+    90 0000019B EB55                        jmp continue
+    91                                  
+    92                                  
+    93                                  
+    94                                      zero_division:
+    95                                      ; write
+    96 0000019D 66B80100                    mov ax, 1; системная функция 1 (write)
+    97 000001A1 BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+    98 000001A6 48BE-                       mov rsi, ZeroDiv ; адрес выводимой строки
+    98 000001A8 [6800000000000000] 
+    99 000001B0 BA1B000000                  mov rdx, lenZeroDiv ; длина строки
+   100 000001B5 0F05                        syscall
+   101 000001B7 E983000000                  jmp exit
+   102                                  
+   103                                      else:
+   104 000001BC 8B1C25[10000000]            mov ebx, [B]
+   105 000001C3 3B1C25[0C000000]            cmp ebx, [A]
+   106 000001CA 74D1                        je zero_division
+   107 000001CC 8B0425[0C000000]            mov eax, [A]
+   108 000001D3 030425[10000000]            add eax, [B]
+   109 000001DA 8B0C25[0C000000]            mov ecx, [A]
+   110 000001E1 2B0C25[10000000]            sub ecx, [B]
+   111 000001E8 99                          cdq
+   112 000001E9 F7F9                        idiv ecx
+   113 000001EB 890425[14000000]            mov [F], eax
+   114                                  
+   115                                      continue:
+   116                                      ;ouput
+   117 000001F2 B801000000                  mov rax, 1; системная функция 1 (write)
+   118 000001F7 BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+   119 000001FC 48BE-                       mov rsi, ResMsg ; адрес выводимой строки
+   119 000001FE [0000000000000000] 
+   120 00000206 BA0F000000                  mov rdx, lenRes ; длина строки
+   121 0000020B 0F05                        syscall; вызов системной функции
+   122 0000020D 48BE-                       mov rsi, OutBuf; Pass address of output buffer to IntToStr64
+   122 0000020F [0400000000000000] 
+   123 00000217 488B0425[14000000]          mov rax, [F]
+   124 0000021F E8DCFDFFFF                  call IntToStr64
+   125 00000224 B801000000                  mov rax, 1; системная функция 1 (write)
+   126 00000229 BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+   127 0000022E 48BE-                       mov rsi, OutBuf ; адрес выводимой строки
+   127 00000230 [0400000000000000] 
+   128 00000238 BA08000000                  mov rdx, lenOut ; длина строки
+   129 0000023D 0F05                        syscall; вызов системной функции
+   130                                      
+   131                                      exit:
+   132 0000023F B801000000                  mov rax, 1; системная функция 1 (write)
+   133 00000244 BF01000000                  mov rdi, 1; дескриптор файла stdout=1
+   134 00000249 48BE-                       mov rsi, ExitMsg; адрес выводимой строки
+   134 0000024B [8300000000000000] 
+   135 00000253 BA0B000000                  mov rdx, lenExit ; длина строки
+   136 00000258 0F05                        syscall; вызов системной функции
+   137 0000025A B83C000000                  mov rax, 60; системная функция 60 (exit)
+   138 0000025F 4831FF                      xor rdi, rdi; return code 0
+   139 00000262 0F05                        syscall; вызов системной функции

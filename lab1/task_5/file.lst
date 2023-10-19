@@ -1,0 +1,12 @@
+     1                                  section .data
+     2 00000000 2500                        dw 25h
+     3 00000002 0025                        dw 2500h
+     4 00000004 2500                        dw 37
+     5 00000006 0025                        dw 9472
+     6                                  section .bss
+     7                                  
+     8                                  section .text
+     9                                      global _start
+    10                                  _start:
+    11 00000000 B83C000000                  mov rax, 60
+    12 00000005 0F05                        syscall
